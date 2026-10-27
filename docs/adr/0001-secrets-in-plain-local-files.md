@@ -1,0 +1,3 @@
+# App secrets and tokens live in plain local files
+
+social-kit stores the user's Meta app secret, Threads app secret and every access token as JSON files in the user's config directory (directory 0700, files 0600, written atomically), not in the OS keychain. Meta's "never ship the app secret" rule targets developers distributing their own secret to strangers; here each user brings their own app and the secret never leaves their machine, the same position as Meta's own Ads CLI and as youtube-kit with a Google client secret. Plain files work headless and over SSH, and the MCP server reads them without a keychain prompt; keychain support may be added later but never as the only route.
