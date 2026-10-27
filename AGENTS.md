@@ -1,6 +1,6 @@
-# meta-kit
+# social-kit
 
-CLI and MCP server for Instagram, Facebook Pages and Threads, built on Meta's official APIs. Planning stage: the wayfinder map on GitHub Issues charts the way to the spec.
+CLI (`skit`) and MCP server for Instagram, Facebook Pages and Threads, built on Meta's official APIs. Independent, not affiliated with Meta. Planning stage: the wayfinder map on GitHub Issues charts the way to the spec.
 
 ## Agent skills
 
