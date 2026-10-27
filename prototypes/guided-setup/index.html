@@ -46,6 +46,8 @@
   .term .warn::before { content: "⚠ "; }
   .term .ok { color: #86efac; }
   .term .ok::before { content: "✓ "; }
+  .term .miss { color: #9ca3af; }
+  .term .miss::before { content: "– "; }
   .term .err { color: #fca5a5; }
   .term .err::before { content: "✗ "; }
   .term .prompt { color: #9ca3af; }
@@ -84,7 +86,7 @@
   <details>
     <summary>Open questions to react to</summary>
     <ol>
-      <li>Bare <code>skit auth login</code> asks <i>which</i> to connect (Instagram + Pages, Threads, or all) when more than one is missing. Right, or should it always do everything missing, or require a platform?</li>
+      <li>Bare <code>skit auth login</code> starts with check marks for what is connected, then asks what to do: connect what's missing (the default) or add another account to a connected platform.</li>
       <li>Browser sign-in is the default; the system-user token is <code>--token</code> only. Should the prompt offer the choice instead, given Page tokens from the browser sign-in never expire either?</li>
       <li>Threads: paste the localhost address (shown here) versus a local https listener with a self-signed certificate (a browser warning instead of a paste).</li>
       <li>Steps skit can't check are re-shown on every run until a login proves them. Too repetitive, or the right trade for having no progress file?</li>
@@ -158,7 +160,7 @@ const Setup = (() => {
   function initial() {
     return {
       meta: { app: false, messenger: true, igExtras: false, igLinked: false, secondPage: false,
-        threadsRedirect: false, threadsTester: false, systemUser: false },
+        threadsRedirect: false, threadsTester: false, secondThreads: false, systemUser: false },
       local: { app: null, logins: [], defaults: {} },
       session: null,
       term: [],
@@ -209,6 +211,7 @@ const Setup = (() => {
   }
 
   const say = (s, k, t = '') => { s.term.push({ k, t }); };
+  const step = (s, t) => say(s, 'step', `${++s.session.ctx.n}. ${t}`);
 
   function applyDefaults(s) {
     const L = s.local;
@@ -236,51 +239,51 @@ const Setup = (() => {
 
   const SCREENS = {
     choose(s) {
-      say(s, 'head', 'What do you want to connect?');
-      say(s, 'opt', '1  Instagram and Facebook Pages   one Facebook sign-in covers both');
-      say(s, 'opt', '2  Threads                        a sign-in of its own');
-      say(s, 'opt', '3  All three');
-      say(s, 'prompt', 'Choice [3]:');
+      const c = s.session.ctx;
+      say(s, 'head', c.defaultIndex === null ? 'Everything is connected. Add another account?' : 'What do you want to connect?');
+      c.options.forEach((o, i) => say(s, 'opt', `${i + 1}  ${o.label}${o.note ? ' · ' + o.note : ''}`));
+      say(s, 'prompt', c.defaultIndex === null ? 'Choice [Enter to stop]:' : `Choice [${c.defaultIndex + 1}]:`);
     },
     'app.create'(s) {
       s.session.ctx.appShown = true;
       say(s, 'head', 'One-time Meta app setup · about 5 minutes');
-      say(s, 'step', '1. Create a Business app. Name it anything without Meta, Facebook, Instagram or Threads in it, e.g. skit.');
+      step(s, 'Create a Business app named social-kit.');
       say(s, 'url', `${APPS}creation/`);
-      say(s, 'step', '2. Tick these use cases:');
+      step(s, 'Tick these use cases:');
       say(s, 'val', 'Manage everything on your Page');
       say(s, 'val', 'Manage messaging and content on Instagram  → API setup with Facebook login');
       say(s, 'val', 'Access the Threads API');
       say(s, 'val', 'Engage with customers on Messenger from Meta  (the inbox needs it)');
-      say(s, 'step', "3. Leave it in Development. Skip business verification and App Review: your own accounts don't need them.");
+      step(s, "Leave it in Development. Skip business verification and App Review: your own accounts don't need them.");
       say(s, 'note', 'Already have an app with these use cases? Just press Enter.');
       say(s, 'prompt', 'Press Enter when done');
     },
     'app.creds'(s) {
       say(s, 'head', 'App credentials');
-      say(s, 'step', 'Open your app → App settings → Basic. Copy the App ID, then click Show next to App secret and copy it.');
+      step(s, 'Open your app → App settings → Basic. Copy the App ID, then click Show next to App secret and copy it.');
       say(s, 'url', APPS);
       say(s, 'prompt', 'App ID:');
     },
     'th.creds'(s) {
       say(s, 'head', 'Threads app credentials');
-      say(s, 'step', 'Threads has its own app ID and secret inside your app: Use cases → Access the Threads API → Customize → Settings.');
+      step(s, 'Threads has its own app ID and secret inside your app: Use cases → Access the Threads API → Customize → Settings.');
       say(s, 'url', s.local.app?.appId ? USE_CASES : APPS);
       say(s, 'prompt', 'Threads app ID:');
     },
     'fb.prep'(s) {
       s.session.ctx.prepShown = true;
       say(s, 'head', 'Instagram and Facebook Pages · one step before signing in');
-      say(s, 'step', "Meta's \"Add all required permissions\" leaves three out. Use cases → Manage messaging and content on Instagram → Customize → Permissions → Add:");
+      step(s, "Meta's \"Add all required permissions\" leaves three out. Use cases → Manage messaging and content on Instagram → Customize → Permissions → Add:");
       say(s, 'val', 'instagram_manage_comments   instagram_manage_insights   instagram_manage_contents');
       say(s, 'url', USE_CASES);
       say(s, 'prompt', 'Press Enter when done');
     },
     'fb.consent'(s) {
       say(s, 'head', "Facebook's sign-in opens in your browser.");
-      say(s, 'step', '• Sign in as the person who manages the Page.');
-      say(s, 'step', '• Facebook asks about Pages, Businesses and Instagram accounts in turn. Choose "All current and future" on each, or pick the ones skit may use.');
-      say(s, 'step', "• If it says the app isn't reviewed: it's your own app in development mode, continue.");
+      step(s, 'Sign in as the person who manages the Page.');
+      step(s, 'Facebook asks about Pages, Businesses and Instagram accounts in turn. Choose "All current and future" on each, or pick the ones skit may use.');
+      if (s.session.ctx.redoFb && fbLogins(s.local).length) step(s, 'To add a Page or Instagram account, tick it there. A Page someone else manages needs their sign-in: they log in to Facebook in this browser.');
+      step(s, "If it says the app isn't reviewed: it's your own app in development mode, continue.");
       say(s, 'url', `https://www.facebook.com/dialog/oauth?client_id=${APP_ID}&redirect_uri=${FB_REDIRECT}&…`);
       say(s, 'wait', 'Waiting for Facebook… (Ctrl-C to stop)');
     },
@@ -289,8 +292,8 @@ const Setup = (() => {
       const token = s.session.route === 'token';
       say(s, 'warn', "Meta didn't grant everything skit uses. These won't work:");
       m.forEach(f => say(s, 'val', `${f.what.padEnd(30)} needs ${f.scope}`));
-      if (m.some(f => f.fix === 'perm')) say(s, 'step', 'Add the Instagram ones: Manage messaging and content on Instagram → Customize → Permissions.');
-      if (m.some(f => f.fix === 'messenger')) say(s, 'step', 'For the inbox, add the use case "Engage with customers on Messenger from Meta" and its permissions.');
+      if (m.some(f => f.fix === 'perm')) step(s, 'Add the Instagram ones: Manage messaging and content on Instagram → Customize → Permissions.');
+      if (m.some(f => f.fix === 'messenger')) step(s, 'For the inbox, add the use case "Engage with customers on Messenger from Meta" and its permissions.');
       say(s, 'url', USE_CASES);
       if (token) say(s, 'note', 'A token keeps the permissions it was made with, so generate a new one afterwards.');
       say(s, 'prompt', token ? 'Press Enter to paste a new token, or s to skip for now' : 'Press Enter to sign in again, or s to skip for now');
@@ -298,7 +301,7 @@ const Setup = (() => {
     'ig.link'(s) {
       const pages = assets(s.local, 'facebook').map(label).join(', ');
       say(s, 'warn', `No Instagram account is linked to ${pages}. skit reaches Instagram only through a linked Page.`);
-      say(s, 'step', 'Link it one of two ways:');
+      step(s, 'Link it, either way works:');
       say(s, 'val', 'a. Instagram app, signed in as the account: Profile → Edit profile → Page → Connect existing Page');
       say(s, 'val', 'b. Facebook in the browser, switched to the Page: Settings → Linked accounts → Instagram → Connect');
       say(s, 'url', 'https://www.facebook.com/settings');
@@ -308,19 +311,25 @@ const Setup = (() => {
     'th.prep'(s) {
       s.session.ctx.thPrepShown = true;
       say(s, 'head', 'Threads · two settings before signing in');
-      say(s, 'step', '1. Use cases → Access the Threads API → Customize → Settings → Redirect Callback URLs: add');
+      step(s, 'Use cases → Access the Threads API → Customize → Settings → Redirect Callback URLs: add');
       say(s, 'val', TH_REDIRECT);
       say(s, 'note', '   Threads refuses http, so this one is https. If Save also wants the Uninstall and Delete callbacks, any https page of yours will do.');
       say(s, 'url', USE_CASES);
-      say(s, 'step', '2. App roles → Roles → Add People → Threads Tester → your Threads username.');
+      step(s, 'App roles → Roles → Add People → Threads Tester → your Threads username.');
       say(s, 'url', `${APPS}${APP_ID}/roles/roles/`);
-      say(s, 'step', '   Then accept it on Threads, signed in as that account: Settings → Account → Website permissions → Invites.');
+      step(s, 'Accept it on Threads, signed in as that account: Settings → Account → Website permissions → Invites.');
       say(s, 'url', 'https://www.threads.com/settings/account');
       say(s, 'prompt', 'Press Enter when done');
     },
     'th.consent'(s) {
-      s.session.ctx.outcome = null;
-      say(s, 'head', "Threads' sign-in opens in your browser. Approve every permission.");
+      const c = s.session.ctx;
+      c.outcome = null;
+      say(s, 'head', "Threads' sign-in opens in your browser.");
+      if (c.redoTh && ready(s.local).threads) {
+        step(s, 'Log out of Threads in the browser, or switch to the other account, first. Otherwise Threads signs in the connected account again.');
+        step(s, 'The other account needs a Threads Tester invite too: App roles → Roles → Add People, then accept it on Threads.');
+      }
+      step(s, 'Approve every permission.');
       say(s, 'url', `https://threads.net/oauth/authorize?client_id=${THREADS_APP_ID}&redirect_uri=${TH_REDIRECT}&…`);
       say(s, 'note', "Afterwards the browser lands on a localhost page that won't load. That's expected: copy its address.");
       say(s, 'prompt', 'Paste that address here:');
@@ -328,12 +337,12 @@ const Setup = (() => {
     'token.steps'(s) {
       say(s, 'head', 'Instagram and Facebook Pages · system-user token');
       say(s, 'note', "A system user's token never expires and needs no browser sign-in. About 5 minutes in Business settings.");
-      say(s, 'step', "1. Your app and Page must sit in one business portfolio. Business settings → Accounts → Apps: add your app if it isn't there.");
+      step(s, "Your app and Page must sit in one business portfolio. Business settings → Accounts → Apps: add your app if it isn't there.");
       say(s, 'url', 'https://business.facebook.com/settings');
-      say(s, 'step', '2. Users → System users → Add: name it skit, role Employee.');
+      step(s, 'Users → System users → Add: name it social-kit, role Employee.');
       say(s, 'url', 'https://business.facebook.com/settings/system-users');
-      say(s, 'step', '3. Assign assets: your Page and Instagram account with content, messages, community and insights (not full control), and your app with full control.');
-      say(s, 'step', '4. Generate token → your app → Expiration: Never → tick the permissions.');
+      step(s, 'Assign assets: your Page and Instagram account with content, messages, community and insights (not full control), and your app with full control.');
+      step(s, 'Generate token → your app → Expiration: Never → tick the permissions.');
       say(s, 'warn', 'Untick any the dialog marks as not added to your app: Continue would add them to the app and accept extra terms.');
       say(s, 'note', 'Meta shows the token once.');
       say(s, 'prompt', 'Press Enter when you have it');
@@ -345,6 +354,7 @@ const Setup = (() => {
 
   function show(s, screen) {
     s.session.screen = screen;
+    s.session.ctx.n = 0;
     SCREENS[screen]?.(s);
     return s;
   }
@@ -415,18 +425,17 @@ const Setup = (() => {
     say(s, 'cmd', 'skit auth login' + ({ all: '', token: ' --token' }[target] ?? ' ' + target));
     s.session = { route: target === 'token' ? 'token' : 'browser', want: {}, screen: null, ctx: {} };
     const c = s.session.ctx;
+    if (L.app || L.logins.length) summary(s);
     if (target === 'all') {
-      if (!fbOpen && r.threads) {
-        say(s, 'ok', 'Instagram, Facebook Pages and Threads are all connected.');
-        say(s, 'note', 'To add another Page or account: skit auth login facebook, or skit auth login threads.');
-        s.session = null;
-        return s;
-      }
-      const saved = [L.app && 'app credentials', ...PLATFORMS.filter(p => r[p])].filter(Boolean);
-      if (saved.length) say(s, 'note', `Picking up where you left off. Saved: ${saved.join(', ')}.`);
-      if (fbOpen && !r.threads) return show(s, 'choose');
-      s.session.want = fbOpen ? { fb: true, ig: true } : { th: true };
-      return advance(s);
+      const options = [];
+      if (fbOpen && !r.threads) options.push({ label: 'All three', want: { fb: true, ig: true, th: true } });
+      if (fbOpen) options.push({ label: r.facebook ? 'Finish Instagram and Facebook Pages' : 'Instagram and Facebook Pages', note: 'one Facebook sign-in covers both', want: { fb: true, ig: true } });
+      if (!r.threads) options.push({ label: 'Threads', note: 'a sign-in of its own', want: { th: true } });
+      if (r.facebook) options.push({ label: 'Add another Instagram account or Facebook Page', want: { fb: true, ig: true }, ctx: { redoFb: true } });
+      if (r.threads) options.push({ label: 'Add another Threads account', want: { th: true }, ctx: { redoTh: true } });
+      c.options = options;
+      c.defaultIndex = fbOpen || !r.threads ? 0 : null;
+      return show(s, 'choose');
     }
     const hasFb = fbLogins(L).length > 0;
     if (target === 'threads') {
@@ -437,6 +446,17 @@ const Setup = (() => {
       c.redoFb = target === 'token' || (target === 'facebook' && hasFb) || (target === 'instagram' && r.instagram);
     }
     return advance(s);
+  }
+
+  function summary(s) {
+    const L = s.local, r = ready(L), m = missing(L);
+    const names = p => assets(L, p).map(a => label(a) + (L.defaults[p] === a.id && assets(L, p).length > 1 ? ' ★' : '')).join(', ');
+    say(s, 'head', 'Connected so far');
+    say(s, L.app ? 'ok' : 'miss', `App         ${L.app ? 'credentials saved' : 'not set up'}`);
+    say(s, r.instagram ? 'ok' : 'miss', `Instagram   ${r.instagram ? names('instagram') : r.facebook ? 'no account linked to a Page' : 'not connected'}`);
+    say(s, r.facebook ? 'ok' : 'miss', `Facebook    ${r.facebook ? names('facebook') : 'not connected'}`);
+    say(s, r.threads ? 'ok' : 'miss', `Threads     ${r.threads ? names('threads') : 'not connected'}`);
+    if (m.length) say(s, 'warn', `Not granted: ${m.map(f => f.what).join(', ')}`);
   }
 
   function acceptToken(s, expiry) {
@@ -451,8 +471,16 @@ const Setup = (() => {
 
   const HANDLERS = {
     choose(s, a) {
-      say(s, 'input', { fb: '1', th: '2', all: '3' }[a.pick]);
-      s.session.want = { fb: a.pick !== 'th', ig: a.pick !== 'th', th: a.pick !== 'fb' };
+      const c = s.session.ctx;
+      const i = a.type === 'enter' ? c.defaultIndex : a.index;
+      say(s, 'input', a.type === 'enter' ? '⏎' : String(i + 1));
+      if (i === null) {
+        s.session = null;
+        return s;
+      }
+      const o = c.options[i];
+      s.session.want = o.want;
+      Object.assign(c, o.ctx || {});
       return advance(s);
     },
     'app.create'(s) {
@@ -500,8 +528,14 @@ const Setup = (() => {
       say(s, 'browser', 'You approve on Facebook; it returns to localhost:8765.');
       const login = { id: 'facebook-10229', kind: 'oauth', who: 'Alex', expiry: 'Page tokens never expire', scopes: granted(s.meta), assets: [] };
       login.assets = discover(s.meta, login.id);
+      const known = new Set(fbLogins(s.local).flatMap(l => l.assets.map(x => x.id)));
       say(s, 'ok', 'Signed in as Alex. Page tokens never expire, so this login needs no renewing.');
       reportAssets(s, login);
+      if (s.session.ctx.redoFb && known.size) {
+        const added = login.assets.filter(x => !known.has(x.id)).map(label);
+        if (added.length) say(s, 'ok', `New: ${added.join(', ')}`);
+        else say(s, 'note', 'Nothing new. To add a Page or Instagram account, tick it in the dialog, or link the Instagram account to a Page first.');
+      }
       s.session.ctx.redoFb = false;
       saveLogin(s, login);
       return advance(s);
@@ -545,23 +579,27 @@ const Setup = (() => {
     'th.consent'(s, a) {
       const c = s.session.ctx;
       if (a.type === 'approve') {
+        c.account = c.redoTh && ready(s.local).threads && s.meta.secondThreads ? 'acmeevents' : 'acmebakery';
         if (!s.meta.threadsRedirect) {
           c.outcome = 'error';
           say(s, 'browser', "Threads shows an error instead: the redirect URL isn't registered for this app.");
-        } else if (!s.meta.threadsTester) {
+        } else if (c.account === 'acmebakery' && !s.meta.threadsTester) {
           c.outcome = 'error';
           say(s, 'browser', "Threads shows an error instead: the app isn't available to this account (no accepted tester invite).");
         } else {
           c.outcome = 'landed';
-          say(s, 'browser', "You approve; the browser lands on https://localhost:8765/callback?code=AQB… and says \"This site can't be reached\".");
+          say(s, 'browser', `You approve as @${c.account}; the browser lands on https://localhost:8765/callback?code=AQB… and says "This site can't be reached".`);
         }
         return s;
       }
       if (a.type === 'paste') {
         say(s, 'input', 'https://localhost:8765/callback?code=AQB…#_');
-        const login = { id: 'threads-2589', kind: 'threads', who: '@acmebakery', expiry: 'renews itself if used every 60 days', scopes: [],
-          assets: [{ platform: 'threads', id: '2589', username: 'acmebakery', login: 'threads-2589' }] };
-        say(s, 'ok', 'Signed in to Threads as @acmebakery. The token renews itself as long as skit runs at least once every 60 days.');
+        const id = c.account === 'acmeevents' ? '2590' : '2589';
+        const known = s.local.logins.some(l => l.id === `threads-${id}`);
+        const login = { id: `threads-${id}`, kind: 'threads', who: `@${c.account}`, expiry: 'renews itself if used every 60 days', scopes: [],
+          assets: [{ platform: 'threads', id, username: c.account, login: `threads-${id}` }] };
+        if (known) say(s, 'warn', `Signed in as @${c.account} again: already connected, so only its token was renewed. To add a different account, log out of Threads in the browser first.`);
+        else say(s, 'ok', `Signed in to Threads as @${c.account}. The token renews itself as long as skit runs at least once every 60 days.`);
         c.redoTh = false;
         saveLogin(s, login);
         return advance(s);
@@ -682,9 +720,8 @@ const Setup = (() => {
     const outcome = se.ctx.outcome;
     const by = {
       choose: [
-        { label: '1  Instagram and Facebook Pages', actions: [{ type: 'choose', pick: 'fb' }] },
-        { label: '2  Threads', actions: [{ type: 'choose', pick: 'th' }] },
-        { label: '3  All three', actions: [{ type: 'choose', pick: 'all' }], primary: true },
+        ...(se.ctx.options || []).map((o, i) => ({ label: `${i + 1}  ${o.label}`, actions: [{ type: 'choose', index: i }] })),
+        { label: se.ctx.defaultIndex === null ? 'Enter (stop)' : `Enter (${se.ctx.defaultIndex + 1})`, actions: [E], primary: true },
       ],
       'app.create': [
         { label: 'Create the app in the browser, then Enter', actions: [M('app'), E], primary: true },
@@ -765,7 +802,7 @@ const SCENARIOS = [
     pre: [{ type: 'preset', meta: { igLinked: true } }],
     steps: [
       ['Run skit auth login', [RUN('all')]],
-      ['Pick 3, all three', [{ type: 'choose', pick: 'all' }]],
+      ['Pick 1, all three', [{ type: 'choose', index: 0 }]],
       ['Create the app in the browser, press Enter', [M('app'), E]],
       ['Paste the App ID and secret', [{ type: 'paste' }]],
       ['Paste the Threads app ID and secret', [{ type: 'paste' }]],
@@ -782,17 +819,18 @@ const SCENARIOS = [
     pre: [{ type: 'preset', meta: { igLinked: true } }],
     steps: [
       ['Run skit auth login', [RUN('all')]],
-      ['Pick 3, all three', [{ type: 'choose', pick: 'all' }]],
+      ['Pick 1, all three', [{ type: 'choose', index: 0 }]],
       ['Create the app, press Enter', [M('app'), E]],
       ['Paste the App ID and secret', [{ type: 'paste' }]],
       ['Ctrl-C at the Threads credentials', [{ type: 'quit' }]],
       ['Next day: run skit auth login again', [RUN('all')]],
-      ['Pick 3 again', [{ type: 'choose', pick: 'all' }]],
+      ['Pick 1, all three, again', [{ type: 'choose', index: 0 }]],
       ['Paste the Threads app ID and secret', [{ type: 'paste' }]],
       ['Add the Instagram permissions, press Enter', [M('igExtras'), E]],
       ["Approve Facebook's sign-in", [{ type: 'approve' }]],
       ['Ctrl-C at the Threads settings', [{ type: 'quit' }]],
       ['Run skit auth login again: only Threads is left', [RUN('all')]],
+      ['Press Enter: Threads is the default', [E]],
       ['Do both Threads settings, press Enter', [M('threadsRedirect'), M('threadsTester'), E]],
       ["Approve Threads' sign-in", [{ type: 'approve' }]],
       ['Paste the localhost address', [{ type: 'paste' }]],
@@ -843,6 +881,28 @@ const SCENARIOS = [
     ],
   },
   {
+    name: 'More accounts',
+    desc: "Everything is connected. Running skit auth login again shows check marks per platform and offers to add accounts. The first Threads try forgets to switch accounts in the browser, so Threads signs in the connected one again.",
+    pre: [
+      { type: 'preset', meta: { app: true, igLinked: true, igExtras: true, threadsRedirect: true, threadsTester: true }, app: { threads: true } },
+      RUN('all'), { type: 'choose', index: 0 }, E, { type: 'approve' }, E, { type: 'approve' }, { type: 'paste' }, { type: 'clear' },
+    ],
+    steps: [
+      ['Run skit auth login', [RUN('all')]],
+      ['Pick 2, another Threads account', [{ type: 'choose', index: 1 }]],
+      ["Approve without switching accounts in the browser", [{ type: 'approve' }]],
+      ['Paste the localhost address', [{ type: 'paste' }]],
+      ['Run skit auth login again', [RUN('all')]],
+      ['Pick 2 again', [{ type: 'choose', index: 1 }]],
+      ['Switch to @acmeevents (tester invite accepted), approve', [M('secondThreads'), { type: 'approve' }]],
+      ['Paste the localhost address', [{ type: 'paste' }]],
+      ['Run skit auth login again', [RUN('all')]],
+      ['Pick 1, another Instagram account or Page', [{ type: 'choose', index: 0 }]],
+      ['Tick the second Page in the dialog, approve', [M('secondPage'), { type: 'approve' }]],
+      ['Run skit auth login once more, then Enter to stop', [RUN('all'), E]],
+    ],
+  },
+  {
     name: 'System-user token',
     desc: "The person already signed in through the browser and now adds a system-user token (a server with no browser, or wanting one login that never needs attention). Two wrong pastes first. At the end, status shows both logins and the token serving the shared Page and Instagram account.",
     pre: [
@@ -868,6 +928,7 @@ const META_LABELS = {
   secondPage: 'Manages a second Page (no Instagram)',
   threadsRedirect: 'Registered the Threads https redirect',
   threadsTester: 'Accepted the Threads tester invite',
+  secondThreads: 'Browser switched to a second Threads account (@acmeevents), its tester invite accepted',
   systemUser: 'Set up a system user and generated a token',
 };
 
