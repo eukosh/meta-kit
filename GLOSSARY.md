@@ -27,3 +27,21 @@ _Avoid_: active asset, current account
 **Platform**:
 One of Instagram, Facebook (Pages) or Threads: the first word of every command and the key of every default.
 _Avoid_: service, network, product
+
+### Instagram content
+
+**Post**:
+A photo, reel or carousel an Instagram account publishes, whether it shows on the grid or only in the Reels tab. Reels and carousels are kinds of post, not separate things.
+_Avoid_: media (collides with media files), item
+
+**Story**:
+An Instagram item that disappears after 24 hours. Not a post: it has its own listing, its own insights and no alt text.
+_Avoid_: post (for stories)
+
+**Mention**:
+An @username naming an asset in someone's caption, comment or story.
+_Avoid_: tag (a different thing), shout-out
+
+**Tag**:
+A person marked on a post or story by its author. Distinct from a mention: a post can tag you without mentioning you.
+_Avoid_: mention, photo mention
