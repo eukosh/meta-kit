@@ -38,11 +38,11 @@ _Avoid_: media (collides with media files), item, status, thread (for a single T
 An item an Instagram account or Facebook Page publishes that disappears after 24 hours. Not a post: it has its own listing and its own short life.
 _Avoid_: post (for stories)
 
-### Instagram content
-
 **Mention**:
-An @username naming an asset in someone's caption, comment or story.
+An @username naming an asset in someone's caption, comment, story, post or reply.
 _Avoid_: tag (a different thing), shout-out
+
+### Instagram content
 
 **Tag**:
 A person marked on a post or story by its author. Distinct from a mention: a post can tag you without mentioning you.
@@ -69,7 +69,7 @@ A Threads text post that archives itself 24 hours after publishing. Still a post
 _Avoid_: story, disappearing post
 
 **Topic**:
-The single tag a Threads post may carry to join a topic's feed.
+The one subject a Threads post may name, placing it in that subject's feed.
 _Avoid_: hashtag, tag (a different thing)
 
 **Quote**:
@@ -77,9 +77,9 @@ A Threads post that embeds another post under its own text.
 _Avoid_: quote tweet, share
 
 **Repost**:
-Putting another post onto your own profile as-is, with nothing added. Undoing it removes the repost, not the post.
+Another post shown on your own profile as-is, with nothing added. Not a post of your own.
 _Avoid_: share, retweet
 
 **Long text**:
-The attachment that carries up to 10,000 characters, optionally styled, under a Threads text post or reply.
-_Avoid_: text attachment, article, note
+The longer, optionally styled body attached under a Threads text post or reply. Meta calls it a text attachment.
+_Avoid_: article, note

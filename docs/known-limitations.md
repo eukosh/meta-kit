@@ -4,7 +4,7 @@ What skit can't do, and why. Most of it is missing from Meta's APIs; the rest si
 
 ## All platforms
 
-- **Bursts get accounts suspended.** Meta's integrity checks treat posts made through the API like any other. A young account publishing many near-identical posts in a few hours can be locked pending appeal (it happened to us on Threads). Space publishes out and vary the text.
+- **Bursts can get an account suspended.** A new Threads account was locked pending appeal after about 15 near-identical test posts and replies through the API in a few hours, then restored. Space publishes out and vary the text.
 
 ## Threads
 
@@ -16,11 +16,13 @@ Not in the API:
 - **Following.** `skit th profile follow @user` only opens Threads' follow page; you click Follow yourself.
 - **DMs.**
 - **Text styling in the main text.** Bold, italic, highlight, underline and strikethrough work only in a post's long text; the main text takes spoilers only.
+- **Poll duration.** Polls can't be timed or closed.
+- **Sharing to Instagram Stories.** The Threads use case doesn't offer the permission.
 
 Unreachable without App Review:
 
 - **Location tagging.** In development mode, location search returns only places around Menlo Park, whatever you search for.
-- **Sharing to Instagram Stories.** The Threads use case doesn't offer the permission.
+- **Quoting, reposting and replying** on other people's posts reach only the app's Threads Testers' posts. Your own posts and the replies under them are not affected.
 - **Search** covers only your own posts.
 - **Profile discovery** (`profile get @user`, `post list @user`) reaches only @threads, @meta, @instagram and @facebook.
 - **Mentions** (`mention list`) shows only mentions made by the app's Threads Testers, per Meta's docs.
