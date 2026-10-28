@@ -17,7 +17,6 @@ Not in the API:
 - **DMs.**
 - **Text styling in the main text.** Bold, italic, highlight, underline and strikethrough work only in a post's long text; the main text takes spoilers only.
 - **Poll duration.** Polls can't be timed or closed.
-- **Sharing to Instagram Stories.** The Threads use case doesn't offer the permission.
 
 Unreachable without App Review:
 
@@ -30,5 +29,6 @@ Unreachable without App Review:
 
 Other:
 
+- **Sharing to Instagram Stories.** The API has it, but the Threads use case doesn't offer its permission, so skit can't request it.
 - **Hiding replies** works only on top-level replies to your posts, not nested ones or your own.
 - **Geo-gating** (`--countries`) works only for accounts Meta marks eligible.
