@@ -31,8 +31,8 @@ _Avoid_: service, network, product
 ### Content
 
 **Post**:
-What an asset publishes to stay. On Instagram a photo, reel or carousel, on the grid or only in the Reels tab; on a Facebook Page text, a link, photos, a video or a reel. Reels and carousels are kinds of post, not separate things.
-_Avoid_: media (collides with media files), item, status
+What an asset publishes to stay. On Instagram a photo, reel or carousel, on the grid or only in the Reels tab; on a Facebook Page text, a link, photos, a video or a reel; on Threads text, an image, a video or a carousel. Reels and carousels are kinds of post, not separate things.
+_Avoid_: media (collides with media files), item, status, thread (for a single Threads post)
 
 **Story**:
 An item an Instagram account or Facebook Page publishes that disappears after 24 hours. Not a post: it has its own listing and its own short life.
@@ -57,3 +57,29 @@ _Avoid_: profile (for a Page)
 **Lead**:
 One person's answers to a Page's lead form.
 _Avoid_: contact, submission
+
+### Threads
+
+**Reply**:
+A Threads post written in answer to another post or reply. A post in its own right, with media, replies and insights of its own; the Threads counterpart of a comment.
+_Avoid_: comment (for Threads)
+
+**Ghost post**:
+A Threads text post that archives itself 24 hours after publishing. Still a post, not a story.
+_Avoid_: story, disappearing post
+
+**Topic**:
+The single tag a Threads post may carry to join a topic's feed.
+_Avoid_: hashtag, tag (a different thing)
+
+**Quote**:
+A Threads post that embeds another post under its own text.
+_Avoid_: quote tweet, share
+
+**Repost**:
+Putting another post onto your own profile as-is, with nothing added. Undoing it removes the repost, not the post.
+_Avoid_: share, retweet
+
+**Long text**:
+The attachment that carries up to 10,000 characters, optionally styled, under a Threads text post or reply.
+_Avoid_: text attachment, article, note
