@@ -42,6 +42,20 @@ _Avoid_: post (for stories)
 An @username naming an asset in someone's caption, comment, story, post or reply.
 _Avoid_: tag (a different thing), shout-out
 
+### Messaging
+
+**Conversation**:
+The private messages between one asset and one person, on Instagram or in a Page's Messenger. Started by the person: by a message, or by a comment the asset answers privately. The inbox is the list of an asset's conversations, not a thing of its own.
+_Avoid_: thread (collides with Threads), chat, DM (the command's name, not the term)
+
+**Message**:
+One item in a conversation: text, media, a shared post, or a story mention or story reply.
+_Avoid_: DM (for one message)
+
+**Reply window**:
+The time after a person's last message in which the asset may answer freely: 24 hours. Outside it Meta refuses ordinary messages.
+_Avoid_: messaging window, session
+
 ### Instagram content
 
 **Tag**:

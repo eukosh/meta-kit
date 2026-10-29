@@ -6,6 +6,20 @@ What skit can't do, and why. Most of it is missing from Meta's APIs; the rest si
 
 - **Bursts can get an account suspended.** A new Threads account was locked pending appeal after about 15 near-identical test posts and replies through the API in a few hours, then restored. Space publishes out and vary the text.
 
+## Instagram and Facebook messages
+
+Unreachable without App Review:
+
+- **Strangers' DMs.** In development mode, `dm list` shows only conversations with people who have a role on your app. Everyone else is left out without an error, older conversations included. Reaching customers needs App Review for Advanced Access, which also takes Business Verification.
+
+Not in the API:
+
+- **History.** Only the 20 most recent messages of a conversation can be read.
+- **Unread on Instagram.** Instagram reports no unread state; `dm list --waiting` shows conversations whose last message is theirs. Reading through skit never marks anything read.
+- **Read receipts, delivery, button taps and real-time messages.** Meta sends these only to webhooks, which skit doesn't run.
+- **Group chats.**
+- **Answering after 24 hours.** Meta refuses ordinary messages once the reply window closes. `--human-agent` extends it to 7 days, but Meta grants that only after review.
+
 ## Threads
 
 Not in the API:
