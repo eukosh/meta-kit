@@ -37,6 +37,8 @@ Run 2026-10-31 against Graph API v26.0 and Threads v1.0, app `social-kit`, asset
 - **Page photo story** (post `1414223057586215`): an unpublished `/photos` upload by `url`, then `photo_stories` with its `photo_id`. Took 5 s.
 - **Page video story** (post `1116064671321123`): `video_stories` start, bytes on `rupload` (2.8 s), finish, published 22 s later. No URL needed.
 
+Cleanup: deleting the Instagram post and the Threads carousel worked. **Page stories can't be deleted by their story `post_id`** (code 100, subcode 33 "Unsupported delete request"). Deleting the video behind a video story removes the story. Deleting the photo behind a photo story returns `success: false`, and the story stays up until it expires. The unpublished photos, the unpublished video, the draft reel and the two abandoned reel sessions were all deleted.
+
 ## Not measured
 
 - Non-standard ports: every route skit would use (tunnels, buckets) serves on 443.
