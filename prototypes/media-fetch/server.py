@@ -55,6 +55,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         for k, v in (headers or {}).items():
             self.send_header(k, v)
+        # Keeps Cloudflare's edge from answering repeat fetches, so every fetch reaches this log.
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         if not head:

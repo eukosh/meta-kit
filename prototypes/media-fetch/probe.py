@@ -323,6 +323,10 @@ def cmd_fb_story(a):
             note(a.test, "photo_stories", **call("POST", f"{FB}/{C['page_id']}/photo_stories", {"photo_id": r["body"]["id"]}, C["page_token"]))
 
 
+def cmd_fb_get(a):
+    note(a.test, "fb_get", obj=a.obj, **call("GET", f"{FB}/{a.obj}", {"fields": a.fields} if a.fields else None, C["page_token"]))
+
+
 def cmd_fb_delete(a):
     note(a.test, "fb_delete", obj=a.obj, **call("DELETE", f"{FB}/{a.obj}", token=C["page_token"]))
 
@@ -366,6 +370,7 @@ def main():
     s = sub.add_parser("fb-video"); media_args(s); s.set_defaults(f=cmd_fb_video)
     s = sub.add_parser("fb-reel"); media_args(s); s.add_argument("--bytes", action="store_true"); s.set_defaults(f=cmd_fb_reel)
     s = sub.add_parser("fb-story"); media_args(s); s.add_argument("--bytes", action="store_true"); s.set_defaults(f=cmd_fb_story)
+    s = sub.add_parser("fb-get"); s.add_argument("test"); s.add_argument("obj"); s.add_argument("--fields"); s.set_defaults(f=cmd_fb_get)
     s = sub.add_parser("fb-delete"); s.add_argument("test"); s.add_argument("obj"); s.set_defaults(f=cmd_fb_delete)
     sub.add_parser("check").set_defaults(f=cmd_check)
     s = sub.add_parser("kill"); s.add_argument("state", choices=["on", "off"]); s.set_defaults(f=cmd_kill)
